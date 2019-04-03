@@ -1,2 +1,20 @@
-# ZChart
+# ZChart.js
 ZChart - 100 Percent Stacked Bar Chart
+
+## Usage
+
+```js
+var chart = new ZChart({
+            element : '#myZChart',
+            title : 'Test Title',
+            legend: [
+                'new', 'work', 'finish', 'bad'
+            ],
+            dataRow : [
+                {title : 'Test 1', values: [10,12,3,1]},
+                {title : 'Test 2', values: [310,12,14,2]},  
+                {title : 'Test 3', values: [24,12,1,3]},  
+                {title : 'Test 3', values: [33,1,8]},  
+            ],
+        });
+```
