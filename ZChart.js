@@ -2,7 +2,7 @@
  * ZChart - 100 Percent Stacked Bar Chart
  * 
  * @author Zakharov Andrey https://github.com/ZakharovAndrew
- * @version 0.3
+ * @version 0.31
  */
 
 var ZChart = function(params) {
@@ -46,7 +46,22 @@ var ZChart = function(params) {
         return Math.floor((number / maxNumber) * 100);
     }
     
-    this.init = function () {
+    // Cross-browser
+    function addEvent(elem, type, handler) {
+    	if (!elem) {
+            return false;
+	}
+	if (window.addEventListener) {
+            elem.addEventListener(type, handler, false);
+	} else {
+            elem.attachEvent('on' + type, function() {
+		handler.call(elem);
+            });
+	}
+	return false;
+    }
+       
+    function draw(dataRow) {
         var bodyHtml = '<div class="ZChart">';
         var legendHtml = '';
         
@@ -59,12 +74,12 @@ var ZChart = function(params) {
         
         // chart legend
         if (typeof(options.legend) !== 'undefined' && options.legend !== null) {
-            options.legend.forEach(function(element) {
-                legendHtml += '<div class="chart-legend"><span></span>'+element+'</div>';
+            options.legend.forEach(function(element, i) {
+                legendHtml += '<div class="chart-legend"><span class="chart-legend-item" data-id="'+i+'"></span>'+element+'</div>';
             });
         }
         
-        options.dataRow.forEach(function(element) {
+        dataRow.forEach(function(element) {
             // find sum of all elements
             var sum = arraySum(element.values);
             // sum of all percents
@@ -102,7 +117,11 @@ var ZChart = function(params) {
 
         bodyHtml += '<div class="chart-legend-row">'+legendHtml+'</div><table width="100%" border=0 cellspacing="0">' + chart_data + '</table></div>';
 
-        // add CSS style                       
+        el.innerHTML  = bodyHtml;
+    }
+    
+    // add CSS style 
+    function addCSS() {                          
         var sheet = document.createElement('style');
         sheet.innerHTML =  
             options.element + " .ZChart {background:#fff;width:100%;text-align:center;}" + 
@@ -115,13 +134,33 @@ var ZChart = function(params) {
             options.element + " .chart-item:nth-child(3), " + options.element + " .chart-legend:nth-child(3) span {background:" + options.barColor3 + ";color: #fff;} " + 
             options.element + " .chart-item:nth-child(4), " + options.element + " .chart-legend:nth-child(4) span {background:" + options.barColor4 + ";color: #fff;} "+
             options.element + " .chart-legend span{ height:18px;width:18px;margin-right:5px; display:block; float:left;}"+
+            options.element + " .chart-legend span:hover {cursor:pointer;}" +
             options.element + " .chart-legend {display:table-cell;padding-right:5px;padding-left:5px;font-size:11px;height:18px;line-height:18px;}"+
-            options.element + " .chart-legend-row {margin:0 auto;display:table;margin-bottom: 10px;}"+ 
+            options.element + " .chart-legend-row {margin:0 auto;display:table;margin-bottom: 10px;}"+  
             options.element + " .ZChart tr td:first-child {text-align: right; padding-right:5px;color:#666;font-size: 12px;white-space: nowrap;}";
         document.body.appendChild(sheet);
-
-        el.innerHTML  = bodyHtml;
+    }
+    
+    this.init = function () {
+        // add CSS style
+        addCSS();
+        // initiate chart drawing
+        draw(options.dataRow);
+        
+        // hide on click
+        addEvent(el, 'click', function(e){
+            if(e.target.className === 'chart-legend-item') {
+		var itemId = e.target.getAttribute('data-id');
+                var dataRow = [];
+                options.dataRow.forEach(function(element) {
+                    element.values[itemId] = 0;
+                    dataRow.push(element);
+                });
+                draw(dataRow);
+            }
+            return false;
+        }, false);
     };
-	
+    
     this.init();
 };
